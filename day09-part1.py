@@ -14,16 +14,15 @@ class Position:
     def __str__(self):
         return str(self.x) + ", " + str(self.y)
     
-    def move(self, dir: str):
+    def move(self, dir: Direction):
         assert dir != ""
         match dir:
-            case "U": self.y -= 1
-            case "D": self.y += 1
-            case "L": self.x -= 1
-            case "R": self.x += 1
+            case Direction.Up: self.y -= 1
+            case Direction.Down: self.y += 1
+            case Direction.Left: self.x -= 1
+            case Direction.Right: self.x += 1
 
-with open("./inputs/day09-example.txt") as file:
-    # moves = [map((str, int), line.strip().split()) for line in file]
+with open("./inputs/day09.txt") as file:
     moves = [line.strip().split() for line in file]
 
 pos_head = Position(0, 0)
@@ -50,32 +49,34 @@ def printField():
         print()
 
 for move in moves:
-    dir = move[0]
+    dir = Direction(move[0])
     steps = int(move[1])
 
     for i in range(steps):
         pos_head.move(dir)
-        dir_tail: str = ""
+        dir_tail: Direction
 
         if pos_head.y == pos_tail.y:
             # same row
             if abs(pos_head.x - pos_tail.x) >= 2:
-                dir_tail = "R" if pos_tail.x < pos_head.x else "L"
+                dir_tail = Direction.Right if pos_tail.x < pos_head.x else Direction.Left
                 pos_tail.move(dir_tail)
+
         elif pos_head.x == pos_tail.x:
             # same column
             if abs(pos_head.y - pos_tail.y) >= 2:
-                dir_tail = "D" if pos_tail.y < pos_head.y else "U"
+                dir_tail = Direction.Down if pos_tail.y < pos_head.y else Direction.Up
                 pos_tail.move(dir_tail)
+
         elif (abs(pos_head.y - pos_tail.y) == 2 and abs(pos_head.x - pos_tail.x) == 1) \
             or (abs(pos_head.y - pos_tail.y) == 1 and abs(pos_head.x - pos_tail.x) == 2):
             # diagonal
-            dir_tail = "R" if pos_tail.x < pos_head.x else "L"
+            dir_tail = Direction.Right if pos_tail.x < pos_head.x else Direction.Left
             pos_tail.move(dir_tail)
-            dir_tail = "D" if pos_tail.y < pos_head.y else "U"
+            dir_tail = Direction.Down if pos_tail.y < pos_head.y else Direction.Up
             pos_tail.move(dir_tail)
 
-        printField()
+        #printField()
         visited.append((pos_tail.x, pos_tail.y))
 
 print("count: " + str(len(set(visited))))
