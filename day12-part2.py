@@ -35,7 +35,8 @@ class Vertex:
         return (self.x == other.x and abs(self.y - other.y) == 1) or (self.y == other.y and abs(self.x - other.x) == 1)
 
     def is_step_allowed(self, other) -> bool:
-        return ord(other.text) - ord(self.text) <= 1
+        #return ord(other.text) - ord(self.text) <= 1
+        return ord(self.text) - ord(other.text) <= 1
 
 class Edge:
     def __init__(self, start, end, cost) -> None:
@@ -57,13 +58,10 @@ class Graph:
                 self.vertices.append(create_vertex(vertex_id, char, x, y))
                 vertex_id += 1
 
-    def dijkstra(self):
+    def dijkstra(self, source_vertex, dest_vertex):
+        assert source_vertex != None and dest_vertex != None
         distances = {v: float("inf") for v in self.vertices}
         prev_v = {v: None for v in self.vertices}
-
-        source_vertex = next((v for v in self.vertices if v.is_start), None)
-        dest_vertex = next((v for v in self.vertices if v.is_end), None)
-        assert source_vertex != None and dest_vertex != None
 
         distances[source_vertex] = 0 # set start to cost 0
         vertices_copy = list(self.vertices)[:]
@@ -114,7 +112,26 @@ with open("./inputs/day12.txt") as file:
         matrix[i] = [c for c in line]
 
     graph = Graph(matrix)
-    path = graph.dijkstra()
-    graph.print_path(path)
+    end_vertex = next((v for v in graph.vertices if v.is_end), None)
+    start_points = [v for v in graph.vertices if v.text == "a"]
+    shortest_length = float("inf")
+    shortest_path = []
 
-    print("length: " + str(len(path) - 1))
+    # destinations = [v for v in graph.vertices if v.text == "a"]
+    # for dest in destinations:
+    #     # reverse dijkstra: source = E, targets = all a's
+    #     path = graph.dijkstra(end_vertex, dest)
+    #     length = len(path) - 1
+    #     if (length < shortest_length):
+    #         shortest_length = length
+
+    for i, start in enumerate(start_points):
+        path = graph.dijkstra(start, end_vertex)
+        length = len(path) - 1
+        print("start point " + start.text + " (" + str(start.x) + ", " + str(start.y) + ") - path length=" + str(length))
+        if (length < shortest_length):
+            shortest_length = length
+            shortest_path = path
+
+    graph.print_path(path)
+    print("shortest length: " + str(shortest_length))
