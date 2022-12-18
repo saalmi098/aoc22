@@ -1,6 +1,6 @@
 from functools import reduce
 
-with open("./inputs/day11.txt") as file:
+with open("./inputs/day11-example.txt") as file:
     lines = [line.strip() for line in file.readlines()]
 
 class Monkey:
@@ -38,8 +38,10 @@ class Monkey:
         op = self.op_factors[1]
         second = item if self.op_factors[2] == "old" else self.op_factors[2]
         new_val = eval(str(first) + op + str(second))
+        new_val %= self.test_factor
 
-        if new_val % self.test_factor == 0:
+        if new_val == 0:
+        #if new_val % self.test_factor == 0:
             monkeys[self.dest_true].append_item(new_val)
         else:
             monkeys[self.dest_false].append_item(new_val)
@@ -56,8 +58,13 @@ for round in range(1, round_count + 1):
     for monkey in monkeys:
         monkey.inspect_items(monkeys)
 
-# inspections = [monkey.insp_counter for monkey in monkeys]
-# result = reduce(lambda x, y: x * y, sorted(inspections, reverse=True)[0:2])
-# print(result)
-for monkey in monkeys:
-    print(monkey.items)
+    if round == 1 or round == 20:
+        print(f"== After round {round} ==")
+        for monkey in monkeys:
+            print(f"Monkey {monkey.id} inspected items {monkey.insp_counter} times.")
+
+inspections = [monkey.insp_counter for monkey in monkeys]
+result = reduce(lambda x, y: x * y, sorted(inspections, reverse=True)[0:2])
+print(result)
+#for monkey in monkeys:
+#    print(monkey.items)

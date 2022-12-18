@@ -7,7 +7,7 @@ class Edge:
 
 class Graph:
     def __init__(self, edges) -> None:
-        self.edges = [create_node(*e) for e in edges]
+        self.edges = [create_edge(*e) for e in edges]
 
     def vertices(self):
         return set(e.start for e in self.edges) \
@@ -28,7 +28,7 @@ class Graph:
         vertices_copy = list(self.vertices())[:]
 
         while len(vertices_copy) > 0:
-            v = min(vertices_copy, key=lambda u: distances[u]) # current node
+            v = min(vertices_copy, key=lambda u: distances[u]) # current edge
             vertices_copy.remove(v)
             if (distances[v] == float("inf")):
                 break
@@ -48,7 +48,7 @@ class Graph:
         path.insert(0, curr_v)
         return path
 
-def create_node(start, end, cost) -> Edge:
+def create_edge(start, end, cost) -> Edge:
     return Edge(start, end, cost)
 
 if __name__ == "__main__":
