@@ -126,6 +126,7 @@ with open("./inputs/day12.txt") as file:
     #         shortest_length = length
 
     for i, start in enumerate(start_points):
+        print("calculating point " + str(start.x) + ", " + str(start.y) + "(" + str(i) + ")")
         path = graph.dijkstra(start, end_vertex)
         length = len(path) - 1
         print("start point " + start.text + " (" + str(start.x) + ", " + str(start.y) + ") - path length=" + str(length))

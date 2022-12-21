@@ -1,3 +1,6 @@
+import time
+import heapq
+
 CONST_START = "S"
 CONST_END = "E"
 
@@ -7,7 +10,7 @@ class color:
    END = '\033[0m'
 
 class Vertex:
-    def __init__(self, v_id, text, x, y) -> None:
+    def __init__(self, v_id, text, x, y, graph) -> None:
         self.v_id = v_id
         self.is_start = True if text == CONST_START else False
         self.is_end = True if text == CONST_END else False
@@ -19,6 +22,8 @@ class Vertex:
         self.text = text
         self.x = x
         self.y = y
+        self.graph = graph
+        self.cost_to_start = float("inf")
 
     def __str__(self) -> str:
         return self.text
@@ -26,9 +31,15 @@ class Vertex:
     def __repr__(self) -> str:
         return self.text + " (" + str(self.x) + ", " + str(self.y) + ")"
 
-    def get_neighbours(self, vertices):
+    def __lt__(self, other):
+        return self.cost_to_start < other.cost_to_start
+
+    def get_neighbours(self):
+        return self.graph.neighbours[self.v_id]
+
+    def compute_neighbours(self):
         cost = 1
-        neighbours = [(n, cost) for n in vertices if self.is_neighbour(n) and self.is_step_allowed(n)]
+        neighbours = [(n, cost) for n in self.graph.vertices if self.is_neighbour(n) and self.is_step_allowed(n)]
         return neighbours
 
     def is_neighbour(self, other) -> bool:
@@ -43,19 +54,30 @@ class Edge:
         self.end = end
         self.cost = cost
 
-def create_vertex(v_id, text, x, y) -> Vertex:
-    return Vertex(v_id, text, x, y)
+def create_vertex(v_id, text, x, y, graph) -> Vertex:
+    return Vertex(v_id, text, x, y, graph)
 
 class Graph:
     def __init__(self, matrix) -> None:
         self.matrix = matrix
         self.vertices = []
+        self.neighbours = [] # list of neighbours for each vertex
+
+        print("init graph started")
 
         vertex_id = 0
         for y, row in enumerate(matrix):
             for x, char in enumerate(row):
-                self.vertices.append(create_vertex(vertex_id, char, x, y))
+                v = create_vertex(vertex_id, char, x, y, self)
+                self.vertices.append(v)
                 vertex_id += 1
+
+        print("init graph complete")
+
+        # compute neighbours for each vertex
+        for v in self.vertices:
+            # v.graph = self
+            self.neighbours.append(v.compute_neighbours())
 
     def dijkstra(self):
         distances = {v: float("inf") for v in self.vertices}
@@ -66,19 +88,32 @@ class Graph:
         assert source_vertex != None and dest_vertex != None
 
         distances[source_vertex] = 0 # set start to cost 0
-        vertices_copy = list(self.vertices)[:]
+        source_vertex.cost_to_start = 0
+        heap = [source_vertex] # add start vertex to heap with cost 0
 
-        while len(vertices_copy) > 0:
-            v = min(vertices_copy, key=lambda u: distances[u]) # current vertex / get next vertex with minimum distance
-            vertices_copy.remove(v)
-            if (distances[v] == float("inf")):
+        time_sum = 0
+        while heap:
+            v = heapq.heappop(heap)
+
+            if v == dest_vertex:
                 break
 
-            for neighbour, cost in v.get_neighbours(self.vertices):
-                path_cost = distances[v] + cost
-                if path_cost < distances[neighbour]:
-                    distances[neighbour] = path_cost
+            curr_cost = v.cost_to_start
+            if curr_cost > distances[v]: # skip vertex if it has been processed
+                continue
+
+            #vertices_copy.remove(v)
+            #if (distances[v] == float("inf")):
+                #break
+
+            for neighbour, cost in v.get_neighbours():
+                path_cost = curr_cost + cost
+                
+                #if path_cost < distances[neighbour]:
+                if path_cost < neighbour.cost_to_start:
                     prev_v[neighbour] = v
+                    neighbour.cost_to_start = path_cost
+                    heapq.heappush(heap, neighbour)
 
         path = []
         curr_v = dest_vertex
@@ -87,6 +122,7 @@ class Graph:
             curr_v = prev_v[curr_v]
         
         path.insert(0, curr_v)
+
         return path
 
     def print_path(self, path):
@@ -113,8 +149,12 @@ with open("./inputs/day12.txt") as file:
         matrix.append([])
         matrix[i] = [c for c in line]
 
+    start = time.time()
+
     graph = Graph(matrix)
     path = graph.dijkstra()
-    graph.print_path(path)
-
+    
+    end = time.time()
+    #graph.print_path(path)
     print("length: " + str(len(path) - 1))
+    print("duration: " + str(end - start))
