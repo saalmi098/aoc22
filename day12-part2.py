@@ -109,8 +109,8 @@ class Graph:
         while heap:
             v = heapq.heappop(heap)
 
-            # if v == dest_vertex:
-            #     break
+            if v == dest_vertex:
+                break
 
             curr_cost = v.cost_to_start
             if curr_cost > distances[v]: # skip vertex if it has been processed
@@ -180,8 +180,8 @@ with open("./inputs/day12.txt") as file:
             #print("end point " + end_vertex.text + " (" + str(end_vertex.x) + ", " + str(end_vertex.y) + ") - path length=" + str(length))
             #print("  " + "->".join(p.text for p in path))
 
-        # for v in graph.vertices:
-        #     v.cost_to_start = float("inf") # reset costs for next iteration
+        for v in graph.vertices:
+            v.cost_to_start = float("inf") # reset costs for next iteration
 
     end = time.time()
 
