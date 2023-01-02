@@ -1,6 +1,6 @@
 from functools import reduce
 
-with open("./inputs/day11.txt") as file:
+with open("./inputs/day11-example.txt") as file:
     lines = [line.strip() for line in file.readlines()]
 
 class Monkey:
@@ -26,14 +26,14 @@ class Monkey:
         m.dest_false = int(lines[5].split()[-1])
         return m
 
-    def inspect_items(self, monkeys):
+    def inspect_items(self, monkeys, round):
         for item in self.items:
             self.insp_counter += 1
-            self.inspect_item(item, monkeys)
+            self.inspect_item(item, monkeys, round)
         
         self.items.clear()
 
-    def inspect_item(self, item: int, monkeys):
+    def inspect_item(self, item: int, monkeys, round):
         first = item if self.op_factors[0] == "old" else self.op_factors[0]
         op = self.op_factors[1]
         second = item if self.op_factors[2] == "old" else self.op_factors[2]
@@ -41,8 +41,12 @@ class Monkey:
         new_val = int(new_val / 3)
 
         if new_val % self.test_factor == 0:
+            if round <= 2:
+                print(f"Item {new_val}: Monkey {self.id} -> Monkey {self.dest_true}")
             monkeys[self.dest_true].append_item(new_val)
         else:
+            if round <= 2:
+                print(f"Item {new_val}: Monkey {self.id} -> Monkey {self.dest_false}")
             monkeys[self.dest_false].append_item(new_val)
 
     def append_item(self, item: int):
@@ -55,7 +59,13 @@ for idx in range(0, len(lines), 7):
 round_count = 20
 for round in range(1, round_count + 1):
     for monkey in monkeys:
-        monkey.inspect_items(monkeys)
+        monkey.inspect_items(monkeys, round)
+    
+    if round == 1 or round == 2:
+        print(f"== After round {round} ==")
+        for monkey in monkeys:
+            # print(f"Monkey {monkey.id} inspected items {monkey.insp_counter} times.")
+            print(f"Monkey {monkey.id}:", str(monkey.items))
 
 inspections = [monkey.insp_counter for monkey in monkeys]
 result = reduce(lambda x, y: x * y, sorted(inspections, reverse=True)[0:2])
